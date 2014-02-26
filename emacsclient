@@ -1,0 +1,19 @@
+#!/bin/bash
+curr=`xdotool getwindowfocus`
+emacs=`xdotool search --onlyvisible --name emacs\@`
+#xdotool windowfocus $id
+#sleep 0.1
+#xdotool windowactivate $id
+#sleep 0.1
+#xdotool windowraise $id
+#echo "1.."
+/usr/local/bin/emacsclient "$@"
+sleep 0.01
+#echo "2.."
+xdotool windowactivate $emacs
+sleep 0.01
+#echo "3.."
+xdotool windowactivate $curr
+sleep 0.01
+#echo "4.."
+xdotool windowactivate $emacs
