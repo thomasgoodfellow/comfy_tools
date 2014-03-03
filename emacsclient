@@ -1,19 +1,28 @@
 #!/bin/bash
+# Shim emacsclient command - improvements over standard command
+# (1) starts GUI emacs if necessary rather than falling back to text shell mode
+# (2) (tries to) force emacs window to activate, rather than just flashing taskbar button
+# Needs xdotool installed
+TRY=0
+MAXTRIES=1
 curr=`xdotool getwindowfocus`
 emacs=`xdotool search --onlyvisible --name emacs\@`
-#xdotool windowfocus $id
-#sleep 0.1
-#xdotool windowactivate $id
-#sleep 0.1
-#xdotool windowraise $id
-#echo "1.."
-/usr/local/bin/emacsclient "$@"
-sleep 0.01
-#echo "2.."
+if [ $? -ne 0 ]; then echo "Launching GUI emacs..."
+# Start emacs, then try a few times to get the file opened (loop because server socket may not be ready in time)
+coproc emacs&
+MAXTRIES=10
+fi
+for (( TRY=1; TRY<=MAXTRIES; ++TRY )); do
+  /usr/local/bin/emacsclient "$@"
+  if [ $? -eq 0 ]; then break; fi
+  echo "Waiting on emacs start ($TRY)..."; 
+  sleep 1; 
+done
+if (( $TRY > $MAXTRIES )); then echo "emacsclient failed to connect to emacs"; exit 1; fi
+# Shake window activation around to try to force emacs to get focus and not just flash the taskbar button
+emacs=`xdotool search --onlyvisible --name emacs\@`
 xdotool windowactivate $emacs
 sleep 0.01
-#echo "3.."
 xdotool windowactivate $curr
 sleep 0.01
-#echo "4.."
 xdotool windowactivate $emacs
