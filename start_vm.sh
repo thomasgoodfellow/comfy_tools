@@ -1,4 +1,5 @@
 #!/bin/bash
+WID=$(xdotool getactivewindow)
 VM="drinfeld"
 HOST="mccarthy"
 [ "$1" != "" ] && VM=$1
@@ -12,4 +13,5 @@ for ((i = 1; i <= 30; i++)); do
 	break 
   fi
 done
-xfreerdp -k de -a 16 -z -x 1D --sec rdp --plugin cliprdr --plugin rdpdr --data disk:P:/home/thomasg -- -f $VM
+xdotool windowminimize $WID
+xfreerdp -k de -a 32 -z -x 8D --sec rdp --plugin cliprdr --plugin rdpdr --data disk:P:/home/thomasg -- -g 1920x1150 $VM 
