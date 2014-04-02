@@ -23,7 +23,7 @@ if [ "$DOC_ORIGINAL" == "" ] ; then echo "Parameter: PDF file to generate bookle
 # number of pages of original PDF
 NUM_PAGES=`pdfinfo "$DOC_ORIGINAL" | grep Pages | sed 's/^Pages:[ ]*\([0-9]*\).*$/\1/g'`
 # how many blank pages to add
-NUM_BLANKS=$((4 - $NUM_PAGES % 4))
+NUM_BLANKS=$(((4 - $NUM_PAGES % 4) % 4))
 
 # Page layout is as quads: [n 1 2 n-1] [n-2 3 4 n-3] 
 LOWER=1

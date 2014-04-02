@@ -2,8 +2,10 @@
 WID=$(xdotool getactivewindow)
 VM="drinfeld"
 HOST="mccarthy"
+GEO=1920x1150
 [ "$1" != "" ] && VM=$1
 [ "$2" != "" ] && HOST=$2
+[ "$3" != "" ] && GEO=$3
 echo "Try $VM start on $HOST"
 ssh $HOST "/opt/site/bin/vmup.sh $VM &"
 for ((i = 1; i <= 30; i++)); do
@@ -14,4 +16,4 @@ for ((i = 1; i <= 30; i++)); do
   fi
 done
 xdotool windowminimize $WID
-xfreerdp -k de -a 32 -z -x 8D --sec rdp --plugin cliprdr --plugin rdpdr --data disk:P:/home/thomasg -- -g 1920x1150 $VM 
+xfreerdp -k de -a 32 -z -x 8D --sec rdp --plugin cliprdr --plugin rdpdr --data disk:P:/home/thomasg -- -g $GEO $VM 

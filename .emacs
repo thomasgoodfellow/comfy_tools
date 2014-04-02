@@ -30,9 +30,15 @@
 (setq ido-use-faces nil)
 
 
+;; auto-touch from issues makefile makes life intolerably naggy
+(global-auto-revert-mode 1)
+
 
 (setq x-select-enable-clipboard t)
 
+
+;; Building on a SMB mount somehow touches the datestamp, at least in emacs' opinion
+(global-auto-revert-mode 1)
 
 ;; (defun my-compilation-mode-hook-changes ()
 ;;   (define-key compilation-mode-map (kbd "M-p") 'compilation-previous-error)
