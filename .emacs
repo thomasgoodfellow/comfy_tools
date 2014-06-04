@@ -1,8 +1,7 @@
-
-(server-start)
-
 ;; Start CEDET early, so nothing else bootstraps it
 (load-file "~/.emacs.d/minimial-cedet-config.el")
+
+(server-start)
 
 ;; Nice file autocompletes, etc
 (load-file "~/.emacs.d/better-defaults.el")
@@ -10,10 +9,16 @@
 ;; So DELETE key behaves nicely
 (global-set-key (kbd "<delete>") '(lambda (n) (interactive "p") (if (use-region-p) (delete-region (region-beginning) (region-end)) (delete-char n))))
 
+(cua-mode 1)
+;; Remap cua rectangle select to avoid cedet completion
+(global-set-key (kbd "<s-return>") 'cua-set-rectangle-mark)
+
 ;; collect less frequently
 (setq gc-cons-threshold 20000000)
 
-(require 'package)
+(when (< emacs-major-version 24)
+  (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/")))
+(require `package)
 (add-to-list `package-archives
   `("melpa" . "http://melpa.milkbox.net/packages/") t)
 (package-initialize)
@@ -23,22 +28,34 @@
 (require 'ido)
     (ido-mode t)
 (require 'flx-ido)
+
+(require 'delsel)
+
 (ido-mode 1)
 (ido-everywhere 1)
 (flx-ido-mode 1)
 ;; disable ido faces to see flx highlights.
 (setq ido-use-faces nil)
 
-
-;; auto-touch from issues makefile makes life intolerably naggy
-(global-auto-revert-mode 1)
-
+;; window rotations
+(load-file "~/.emacs.d/transpose-frame.elc")
 
 (setq x-select-enable-clipboard t)
 
+;; emacs, stop being a jerk...
+(require 'smooth-scrolling)
 
-;; Building on a SMB mount somehow touches the datestamp, at least in emacs' opinion
-(global-auto-revert-mode 1)
+
+;; Somehow emacs keeps seeing a fresh save as changed when building, so becomes intolerably naggy
+;; auto-touch from issues makefile makes life intolerably naggy
+;; (global-auto-revert-mode 1)
+(defun ask-user-about-supersession-threat (fn)
+  "blatantly ignore files that changed on disk"
+  )
+
+
+;; autosave before compiling
+ (setq compilation-ask-about-save nil)
 
 ;; (defun my-compilation-mode-hook-changes ()
 ;;   (define-key compilation-mode-map (kbd "M-p") 'compilation-previous-error)
@@ -47,10 +64,10 @@
 ;; (add-hook 'compilation-mode-hook 'my-compilation-mode-hook-changes)
 
 
-  (defun my-compilation-hook () 
-    (ergoemacs-define-overrides
-     (define-key compilation-mode-map (kbd "M-n") 'next-error)
-     (define-key compilation-mode-map (kbd "M-p") 'previous-error))
+;;  (defun my-compilation-hook () 
+;;    (ergoemacs-define-overrides
+;;     (define-key compilation-mode-map (kbd "M-n") 'next-error)
+;;     (define-key compilation-mode-map (kbd "M-p") 'previous-error))
 ;; With the wide monitor the default horizontal split works better
 ;;   "Make sure that the compile window is splitting vertically"
 ;;    (progn
@@ -60,8 +77,8 @@
 ;;	    )
 ;;	  )
 ;;      )
-  )
-  (add-hook 'compilation-mode-hook 'my-compilation-hook)
+;;  )
+;;  (add-hook 'compilation-mode-hook 'my-compilation-hook)
 
 
 ;; I-search with initial contents.
@@ -89,12 +106,12 @@
 
 
 
-(add-to-list `load-path "~/.emacs.d/ergoemacs-mode")
-(require 'ergoemacs-mode)
+;(add-to-list `load-path "~/.emacs.d/ergoemacs-mode")
+;(require 'ergoemacs-mode)
 
-(setq ergoemacs-theme nil) ;; Uses Standard Ergoemacs keyboard theme
-(setq ergoemacs-keyboard-layout "us") ;; Assumes QWERTY keyboard layout
-(ergoemacs-mode 1)
+;(setq ergoemacs-theme nil) ;; Uses Standard Ergoemacs keyboard theme
+;(setq ergoemacs-keyboard-layout "us") ;; Assumes QWERTY keyboard layout
+;(ergoemacs-mode 1)
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -106,13 +123,13 @@
  '(custom-safe-themes (quote ("a16346f0185035dd07b203e70294ab533e8be992d9e7a5d5e8800ede264e0e25" default)))
  '(delete-selection-mode t)
  '(ede-project-directories (quote ("/home/thomasg/code/cci/examples" "/home/thomasg/code/cci/api" "/home/thomasg/code/cci/gs_param_implementation")))
- '(ergoemacs-ctl-c-or-ctl-x-delay 0.5)
- '(ergoemacs-handle-ctl-c-or-ctl-x (quote both))
- '(ergoemacs-keyboard-layout "gb")
- '(ergoemacs-mode-used "5.14.01-0")
- '(ergoemacs-smart-paste nil)
- '(ergoemacs-theme nil)
- '(ergoemacs-use-menus t)
+; '(ergoemacs-ctl-c-or-ctl-x-delay 0.5)
+; '(ergoemacs-handle-ctl-c-or-ctl-x (quote both))
+; '(ergoemacs-keyboard-layout "gb")
+; '(ergoemacs-mode-used "5.14.01-0")
+; '(ergoemacs-smart-paste nil)
+; '(ergoemacs-theme nil)
+; '(ergoemacs-use-menus t)
  '(menu-bar-mode nil)
  '(show-paren-mode t)
  '(tool-bar-mode nil)
@@ -122,7 +139,7 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((t (:family "Anonymous Pro Minus" :foundry "unknown" :slant normal :weight normal :height 98 :width normal)))))
+ '(default ((t (:family "Droid Sans Mono" :foundry "unknown" :slant normal :weight normal :height 90 :width normal)))))
 
 
 ;; Nicer source handling for compile
@@ -145,12 +162,12 @@
   (global-set-key [f11] 'previous-error)
   (global-set-key [f12] 'next-error)
 
-(defadvice previous-error (around my-previous-error activate)
-  (let ((display-buffer-overriding-action '(display-buffer-reuse-window (inhibit-same-window . nil))))
-    ad-do-it))
-(defadvice next-error (around my-next-error activate)
-  (let ((display-buffer-overriding-action '(display-buffer-reuse-window (inhibit-same-window . nil))))
-    ad-do-it))
+;;(defadvice previous-error (around my-previous-error activate)
+;;  (let ((display-buffer-overriding-action '(display-buffer-reuse-window (inhibit-same-window . nil))))
+;;    ad-do-it))
+;;(defadvice next-error (around my-next-error activate)
+;;  (let ((display-buffer-overriding-action '(display-buffer-reuse-window (inhibit-same-window . nil))))
+;;    ad-do-it))
 
 ;; ;; Icicles setup - deliberately late
 ;; (add-to-list `load-path "~/.emacs.d/elpa/icicles-20140310.8")
@@ -191,3 +208,18 @@
 (global-set-key
  (if (featurep 'xemacs) (kbd "<C-iso-left-tab>") (kbd "<C-S-iso-lefttab>"))
  'iflipb-previous-buffer)
+
+(set-cursor-color "gold")
+
+;; STOP next-error visiting "included from"s
+;;
+;; This element is what controls the matching behaviour: according to
+;; `compilation-error-regexp-alist` doc, it means if subexpression 4 of the
+;; regexp matches, it's a warning, if subexpression 5 matches, it's an info.
+(nth 5 (assoc 'gcc-include compilation-error-regexp-alist-alist))
+(4 . 5)
+;; We could try and tinker with the regexp, but it's simpler to just set it as
+;; "always match as info".
+(setcar (nthcdr 5 (assoc 'gcc-include compilation-error-regexp-alist-alist)) 0)
+
+

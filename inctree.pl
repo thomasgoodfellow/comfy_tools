@@ -1,6 +1,10 @@
 #!/usr/bin/perl
 
 use strict;
+use Getopt::Long;
+my $showAll = 0;
+GetOptions("showAll!" => \$showAll);
+
 my $foldLibInc = 1;
 my @fileStack;  # stack of included files
 my %fileLines;	# pairs of [SLOC-this-file, SLOC-nested-within-file] non-blank linesper filename (key)
@@ -12,7 +16,7 @@ while(my $line = <>)
       my ($file, $flags) = ($1, $2);
       if($flags =~ /1/ || $#fileStack == -1)	# include file being compiled
       {
-          my $firstInc = !defined($fileLines{$file});	# only show first include in tree - presume file-guards used
+          my $firstInc = $showAll || !defined($fileLines{$file});	# only show first include in tree - presume file-guards used
           my $nestedLibInc = ($#fileStack >= 0) && ($fileStack[$#fileStack] =~ m-^/usr-i);	# test whether included by a library include - presumes /usr synonymous with lib code...
           push @fileStack, $file;
           push @fileTree, [$#fileStack, $file] if($firstInc && (!$foldLibInc || !$nestedLibInc));
@@ -37,11 +41,22 @@ while(my $line = <>)
 
 # dump tree
 print "l-SLOC n-SLOC File\n";
+my %dumpedAlready;
 for(@fileTree)
 {
     my ($depth, $file) = ($_->[0], $_->[1]);
     my $lines = $fileLines{$file};
-    printf "%6d %6d %s %s\n", $lines->[0], $lines->[1], "  " x $depth, $file;
+    my ($currSize, $incSize) = ($lines->[0], $lines->[1]);
+    if(defined($dumpedAlready{$file}))
+    {
+        $currSize = 0;
+        $incSize = 0;
+    }
+    else
+    {
+        $dumpedAlready{$file} = 1;
+    }
+    printf "%6d %6d %s %s\n", $currSize, $incSize, "  " x $depth, $file;
 }
 
 # dump lines of code per file sorted descending

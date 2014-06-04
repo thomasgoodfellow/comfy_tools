@@ -4,10 +4,10 @@
 # of the usable area
 
 use strict;
-use Getopt::Long;
+#use Getopt::Long;
 
-my $verbose = 0;
-GetOptions('v|verbose!' => \$verbose);
+my $verbose = 1;
+#GetOptions('v|verbose!' => \$verbose);
 
 my $snapIdx = -1;
 my $snapIdx = $#ARGV >= 0? index("LRTB", uc(substr($ARGV[0], 0, 1))): -1;
