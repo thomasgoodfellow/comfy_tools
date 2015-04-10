@@ -1,0 +1,8 @@
+#!/bin/bash
+STEM_NAME="${1%.*}";
+if [ "$STEM_NAME" == "" ] ; then echo "Parameter: SVG file to convert to PNG" ; exit 1 ; fi
+
+set -x
+wkhtmltopdf "$STEM_NAME.svg" "$STEM_NAME.pdf"
+gs -sDEVICE=pnggray -sOutputFile="$STEM_NAME.png" -dBATCH -dNOPAUSE -r900 "$STEM_NAME.pdf"
+convert "$STEM_NAME.png" -trim "$STEM_NAME.png"
