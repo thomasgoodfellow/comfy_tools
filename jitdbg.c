@@ -13,7 +13,7 @@
 #include <sys/prctl.h>
 
 void gdb(int sig) {
-  if(sig == SIGSEGV)
+  if(sig == SIGSEGV || sig == SIGABRT)
     {
       pid_t cpid = fork();
       if(cpid == -1)
@@ -65,4 +65,5 @@ void gdb(int sig) {
 
 void _init() {
   signal(SIGSEGV, gdb);
+  signal(SIGABRT, gdb);
 }
