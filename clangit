@@ -1,0 +1,8 @@
+#!/bin/bash
+# run given command through clang and pipe to less, dropping unsupported switches and adding colouring
+
+RCMD="clang++"
+for i in ${@:1} ; do if [ $i != "-Wno-unused-local-typedefs" ] ; then RCMD="$RCMD $i"; fi; done
+RCMD="$RCMD -fcolor-diagnostics 2>&1 | less -R"
+echo $RCMD
+eval $RCMD
