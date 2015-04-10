@@ -1,5 +1,6 @@
+;; TRYING WITHOUT CEDET TO SEE IF BIG NAVIGATION SNOOZES CEASE
 ;; Start CEDET early, so nothing else bootstraps it
-(load-file "~/.emacs.d/minimial-cedet-config.el")
+;;(load-file "~/.emacs.d/minimial-cedet-config.el")
 
 (server-start)
 
@@ -9,9 +10,18 @@
 ;; So DELETE key behaves nicely
 (global-set-key (kbd "<delete>") '(lambda (n) (interactive "p") (if (use-region-p) (delete-region (region-beginning) (region-end)) (delete-char n))))
 
-(cua-mode 1)
+;;(cua-mode 1)
 ;; Remap cua rectangle select to avoid cedet completion
 (global-set-key (kbd "<s-return>") 'cua-set-rectangle-mark)
+(global-set-key (kbd "C-<home>") 'beginning-of-buffer)
+(global-set-key (kbd "C-<end>") 'end-of-buffer)   
+
+(define-key input-decode-map "\e[1;2D" [S-left])  
+(define-key input-decode-map "\e[1;2C" [S-right])  
+(define-key input-decode-map "\e[1;2B" [S-down])  
+(define-key input-decode-map "\e[1;2A" [S-up])  
+(define-key input-decode-map "\e[1;2F" [S-end])  
+(define-key input-decode-map "\e[1;2H" [S-home])
 
 ;; collect less frequently
 (setq gc-cons-threshold 20000000)
@@ -23,6 +33,31 @@
   `("melpa" . "http://melpa.milkbox.net/packages/") t)
 (package-initialize)
 
+;; autocomplete
+;;(add-to-list 'load-path (concat myoptdir "AC"))
+(require 'auto-complete-config)
+(add-to-list 'ac-dictionary-directories "AC/ac-dict")
+
+(require 'auto-complete-clang)
+
+(setq ac-auto-start nil)
+(setq ac-quick-help-delay 0.5)
+;; (ac-set-trigger-key "TAB")
+;; (define-key ac-mode-map  [(control tab)] 'auto-complete)
+(global-set-key (kbd "<s-tab>") 'auto-complete)
+(defun my-ac-config ()
+  (setq-default ac-sources '(ac-source-abbrev ac-source-dictionary ac-source-words-in-same-mode-buffers))
+  (add-hook 'emacs-lisp-mode-hook 'ac-emacs-lisp-mode-setup)
+  ;; (add-hook 'c-mode-common-hook 'ac-cc-mode-setup)
+  (add-hook 'ruby-mode-hook 'ac-ruby-mode-setup)
+  (add-hook 'css-mode-hook 'ac-css-mode-setup)
+  (add-hook 'auto-complete-mode-hook 'ac-common-setup)
+  (global-auto-complete-mode t))
+(defun my-ac-cc-mode-setup ()
+  (setq ac-sources (append '(ac-source-clang ac-source-yasnippet) ac-sources)))
+(add-hook 'c-mode-common-hook 'my-ac-cc-mode-setup)
+;; ac-source-gtags
+(my-ac-config)
 
 ;; Retreated from icicles
 (require 'ido)
@@ -31,6 +66,14 @@
 
 (require 'delsel)
 
+(require 'highlight-symbol)
+(global-set-key (kbd "<f7>") 'highlight-symbol-at-point)
+(global-set-key (kbd "<f8>") 'highlight-symbol-next)
+(global-set-key (kbd "<s-f8>") 'highlight-symbol-prev)
+
+;; keep accidentally going into overwrite mode
+(global-set-key (kbd "<insert>") 'ignore)
+
 (ido-mode 1)
 (ido-everywhere 1)
 (flx-ido-mode 1)
@@ -38,7 +81,7 @@
 (setq ido-use-faces nil)
 
 ;; window rotations
-(load-file "~/.emacs.d/transpose-frame.elc")
+(load-file "~/.emacs.d/transpose-frame.el")
 
 (setq x-select-enable-clipboard t)
 
@@ -48,10 +91,8 @@
 
 ;; Somehow emacs keeps seeing a fresh save as changed when building, so becomes intolerably naggy
 ;; auto-touch from issues makefile makes life intolerably naggy
-;; (global-auto-revert-mode 1)
-(defun ask-user-about-supersession-threat (fn)
-  "blatantly ignore files that changed on disk"
-  )
+(global-auto-revert-mode 1)
+(setq auto-revert-verbose nil)
 
 
 ;; autosave before compiling
@@ -102,38 +143,41 @@
         (add-hook 'isearch-mode-hook 'isearch-set-initial-string)
         (isearch-forward regexp-p no-recursive-edit)))))
 
-  (global-set-key [f8] 'isearch-forward-at-point)
+;;  (global-set-key [f8] 'isearch-forward-at-point)
 
 
 
-;(add-to-list `load-path "~/.emacs.d/ergoemacs-mode")
-;(require 'ergoemacs-mode)
+;;(add-to-list `load-path "~/.emacs.d/ergoemacs-mode")
+;;(require 'ergoemacs-mode)
 
-;(setq ergoemacs-theme nil) ;; Uses Standard Ergoemacs keyboard theme
-;(setq ergoemacs-keyboard-layout "us") ;; Assumes QWERTY keyboard layout
-;(ergoemacs-mode 1)
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(cua-normal-cursor-color "orange")
- '(cua-read-only-cursor-color "yellow")
- '(custom-enabled-themes (quote (misterioso)))
- '(custom-safe-themes (quote ("a16346f0185035dd07b203e70294ab533e8be992d9e7a5d5e8800ede264e0e25" default)))
- '(delete-selection-mode t)
- '(ede-project-directories (quote ("/home/thomasg/code/cci/examples" "/home/thomasg/code/cci/api" "/home/thomasg/code/cci/gs_param_implementation")))
-; '(ergoemacs-ctl-c-or-ctl-x-delay 0.5)
-; '(ergoemacs-handle-ctl-c-or-ctl-x (quote both))
-; '(ergoemacs-keyboard-layout "gb")
-; '(ergoemacs-mode-used "5.14.01-0")
-; '(ergoemacs-smart-paste nil)
-; '(ergoemacs-theme nil)
-; '(ergoemacs-use-menus t)
- '(menu-bar-mode nil)
- '(show-paren-mode t)
- '(tool-bar-mode nil)
- '(visible-cursor t))
+;;(setq ergoemacs-theme nil) ;; Uses Standard Ergoemacs keyboard theme
+;;(setq ergoemacs-keyboard-layout "us") ;; Assumes QWERTY keyboard layout
+;;(ergoemacs-mode 1)
+;;(custom-set-variables
+;; ;; custom-set-variables was added by Custom.
+;; ;; If you edit it by hand, you could mess it up, so be careful.
+;; ;; Your init file should contain only one such instance.
+;; ;; If there is more than one, they won't work right.
+;; '(cua-normal-cursor-color "orange")
+;; '(cua-read-only-cursor-color "yellow")
+;; '(custom-enabled-themes (quote (misterioso)))
+;; '(custom-safe-themes (quote ("a16346f0185035dd07b203e70294ab533e8be992d9e7a5d5e8800ede264e0e25" default)))
+;; '(delete-selection-mode t)
+;; '(ede-project-directories (quote ("/home/thomasg/code/cci/examples" "/home/thomasg/code/cci/api" "/home/thomasg/code/cci/gs_param_implementation")))
+;; '(ergoemacs-ctl-c-or-ctl-x-delay 0.5)
+;; '(ergoemacs-handle-ctl-c-or-ctl-x (quote both))
+;; '(ergoemacs-keyboard-layout "gb")
+;; '(ergoemacs-mode-used "5.14.01-0")
+;; '(ergoemacs-smart-paste nil)
+;; '(ergoemacs-theme nil)
+;; '(ergoemacs-use-menus t)
+;; '(menu-bar-mode nil)
+;; '(printer-name "lj42-o34")
+;; '(ps-printer-name nil)
+;; '(show-paren-mode t)
+;; '(tool-bar-mode nil)
+;; '(visible-cursor t))
+
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -216,10 +260,18 @@
 ;; This element is what controls the matching behaviour: according to
 ;; `compilation-error-regexp-alist` doc, it means if subexpression 4 of the
 ;; regexp matches, it's a warning, if subexpression 5 matches, it's an info.
-(nth 5 (assoc 'gcc-include compilation-error-regexp-alist-alist))
-(4 . 5)
+;;(nth 5 (assoc 'gcc-include compilation-error-regexp-alist-alist))
+;;(4 . 5)
 ;; We could try and tinker with the regexp, but it's simpler to just set it as
 ;; "always match as info".
-(setcar (nthcdr 5 (assoc 'gcc-include compilation-error-regexp-alist-alist)) 0)
+;(setcar (nthcdr 5 (assoc 'gcc-include compilation-error-regexp-alist-alist)) 0)
 
 
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(ansi-color-names-vector ["#242424" "#e5786d" "#95e454" "#cae682" "#8ac6f2" "#333366" "#ccaa8f" "#f6f3e8"])
+ '(custom-enabled-themes (quote (manoj-dark)))
+ '(custom-safe-themes (quote ("a16346f0185035dd07b203e70294ab533e8be992d9e7a5d5e8800ede264e0e25" default))))
