@@ -36,13 +36,13 @@ function GSPage()
     fi
 } 
     
-SCRIPTDIR=`dirname $0`
+SCRIPTDIR="$(dirname "$0")"
 DOC_ORIGINAL="$1"
-if [[ -z $DOC_ORIGINAL ]] ; then echo "Parameter: PDF file to generate booklet version (_book appended)" ; exit 1 ; fi
+if [[ -z \"$DOC_ORIGINAL\" ]] ; then echo "Parameter: PDF file to generate booklet version (_book appended)" ; exit 1 ; fi
 
 # if file is remote then use a copy: GS seems to seek a lot
 DOC_SRC=$DOC_ORIGINAL
-MOUNTPT=$(stat -c %m $DOC_ORIGINAL)
+MOUNTPT=$(stat -c %m "$DOC_ORIGINAL")
 if [[ $MOUNTPT != "/" ]] ; then
     LOCAL_COPY=$( mktemp )
     cp "$DOC_ORIGINAL" $LOCAL_COPY
