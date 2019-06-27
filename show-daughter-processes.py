@@ -24,8 +24,13 @@ for L in lines:
     if not m:
         m = re.match('\[pid\s*\d+\] execve\(\"[^\"]+\", \[(.+)\], \[.+\]\) =', L)
     if m:
-        a = m.group(1).split("\", \"")
-        cmd = ' '.join(a)
+        args = m.group(1).split("\", \"")
+        for i in range(len(args)):
+            a = args[i].strip() # sometimes trailing whitespace
+            if a.find(' ') >= 0:
+                a = '"' + a + '"'
+                args[i] = a
+        cmd = ' '.join(args)
         cmd = cmd[1:-1]
         if dbgit:
             cmd = 'cgdb -d /space/user/thomasg/gdb-8.1/gdb/gdb --data-directory=/space/user/thomasg/gdb-8.1/gdb/data-directory --args ' + cmd
