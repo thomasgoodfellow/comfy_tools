@@ -10,17 +10,32 @@
 ;; So DELETE key behaves nicely
 (global-set-key (kbd "<delete>") '(lambda (n) (interactive "p") (if (use-region-p) (delete-region (region-beginning) (region-end)) (delete-char n))))
 
+
+;; Make shifted direction keys work on the Linux console or in an xterm
+(when (member (getenv "TERM") '("linux" "xterm"))
+  (dolist (prefix '("\eO" "\eO1;" "\e[1;"))
+    (dolist (m '(("2" . "S-") ("3" . "M-") ("4" . "S-M-") ("5" . "C-")
+                 ("6" . "S-C-") ("7" . "C-M-") ("8" . "S-C-M-")))
+      (dolist (k '(("A" . "<up>") ("B" . "<down>") ("C" . "<right>")
+                   ("D" . "<left>") ("H" . "<home>") ("F" . "<end>")))
+        (define-key function-key-map
+                    (concat prefix (car m) (car k))
+                    (read-kbd-macro (concat (cdr m) (cdr k))))))))
+
+;; No dangling whitespace
+(add-hook 'before-save-hook
+          'delete-trailing-whitespace)
 ;;(cua-mode 1)
 ;; Remap cua rectangle select to avoid cedet completion
 (global-set-key (kbd "<s-return>") 'cua-set-rectangle-mark)
-(global-set-key (kbd "C-<home>") 'beginning-of-buffer)
-(global-set-key (kbd "C-<end>") 'end-of-buffer)   
+(global-set-key (kbd "C-<prior>") 'beginning-of-buffer)
+(global-set-key (kbd "C-<next>") 'end-of-buffer)
 
-(define-key input-decode-map "\e[1;2D" [S-left])  
-(define-key input-decode-map "\e[1;2C" [S-right])  
-(define-key input-decode-map "\e[1;2B" [S-down])  
-(define-key input-decode-map "\e[1;2A" [S-up])  
-(define-key input-decode-map "\e[1;2F" [S-end])  
+(define-key input-decode-map "\e[1;2D" [S-left])
+(define-key input-decode-map "\e[1;2C" [S-right])
+(define-key input-decode-map "\e[1;2B" [S-down])
+(define-key input-decode-map "\e[1;2A" [S-up])
+(define-key input-decode-map "\e[1;2F" [S-end])
 (define-key input-decode-map "\e[1;2H" [S-home])
 
 ;; collect less frequently
@@ -29,9 +44,12 @@
 (when (< emacs-major-version 24)
   (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/")))
 (require `package)
-(add-to-list `package-archives
-  `("melpa" . "http://melpa.milkbox.net/packages/") t)
+;(setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
+(add-to-list 'package-archives  '("melpa" . "https://melpa.org/packages/") t)
 (package-initialize)
+
+;; IDE
+;;(load-file "~/.emacs.d/core-c.el")
 
 ;; autocomplete
 ;;(add-to-list 'load-path (concat myoptdir "AC"))
@@ -39,6 +57,10 @@
 (add-to-list 'ac-dictionary-directories "AC/ac-dict")
 
 (require 'auto-complete-clang)
+
+(cua-mode t)
+
+(command-execute 'xterm-mouse-mode)
 
 (setq ac-auto-start nil)
 (setq ac-quick-help-delay 0.5)
@@ -88,6 +110,15 @@
 ;; emacs, stop being a jerk...
 (require 'smooth-scrolling)
 
+;; popwin for temp buffers
+(require 'popwin)
+(push '("\*anything*" :regexp t :height 20) popwin:special-display-config)
+
+(require 'win-switch)
+(windmove-default-keybindings 'meta)
+;(win-switch-setup-keys-ijkl "\C-xo")
+
+(require 'fill-column-indicator)
 
 ;; Somehow emacs keeps seeing a fresh save as changed when building, so becomes intolerably naggy
 ;; auto-touch from issues makefile makes life intolerably naggy
@@ -105,7 +136,7 @@
 ;; (add-hook 'compilation-mode-hook 'my-compilation-mode-hook-changes)
 
 
-;;  (defun my-compilation-hook () 
+;;  (defun my-compilation-hook ()
 ;;    (ergoemacs-define-overrides
 ;;     (define-key compilation-mode-map (kbd "M-n") 'next-error)
 ;;     (define-key compilation-mode-map (kbd "M-p") 'previous-error))
@@ -178,13 +209,6 @@
 ;; '(tool-bar-mode nil)
 ;; '(visible-cursor t))
 
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(default ((t (:family "Droid Sans Mono" :foundry "unknown" :slant normal :weight normal :height 90 :width normal)))))
-
 
 ;; Nicer source handling for compile
   (defun my-compile ()
@@ -248,7 +272,7 @@
 ;; ;; ;; CTRL-TAB buffer switching
 (require 'iflipb)
 (setq iflipb-wrap-around t)
-(global-set-key (kbd "<C-tab>") 'iflipb-next-buffer)
+(global-set-key (kbd "C-q") 'iflipb-next-buffer)
 (global-set-key
  (if (featurep 'xemacs) (kbd "<C-iso-left-tab>") (kbd "<C-S-iso-lefttab>"))
  'iflipb-previous-buffer)
@@ -272,6 +296,32 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(ansi-color-names-vector ["#242424" "#e5786d" "#95e454" "#cae682" "#8ac6f2" "#333366" "#ccaa8f" "#f6f3e8"])
+ '(ansi-color-names-vector
+   ["#242424" "#e5786d" "#95e454" "#cae682" "#8ac6f2" "#333366" "#ccaa8f" "#f6f3e8"])
+ '(auto-revert-remote-files t)
+ '(cmake-ide-build-dir "/space/user/thomasg/msm/smc-compiler/build/compiler")
  '(custom-enabled-themes (quote (manoj-dark)))
- '(custom-safe-themes (quote ("a16346f0185035dd07b203e70294ab533e8be992d9e7a5d5e8800ede264e0e25" default))))
+ '(custom-safe-themes
+   (quote
+    ("a16346f0185035dd07b203e70294ab533e8be992d9e7a5d5e8800ede264e0e25" default)))
+ '(package-selected-packages
+   (quote
+    (lsp-mode gnu-elpa-keyring-update magit-gerrit company-c-headers rtags win-switch smooth-scrolling popwin magit-gitflow llvm-mode irony iflipb highlight-symbol flx-ido fill-column-indicator ergoemacs-mode dired-details+ auto-complete-clang ag)))
+ '(tab-width 2)
+ '(xterm-mouse-mode t))
+(put 'set-goal-column 'disabled nil)
+
+; Magit
+;(require 'magit-gerrit)
+(require 'magit)
+(global-set-key (kbd "C-x g") 'magit-status)
+(global-set-key (kbd "C-x M-g") 'magit-dispatch-popup)
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
+
+; recent files
+(desktop-save-mode 1)
