@@ -31,7 +31,7 @@ with open(sys.argv[1], newline='') as f:
         if rowNum > 0:
           if not re.search(filterPat, row[filterCol]):
             continue
-          dt = datetime.strptime(row[13], '%Y/%m/%d %H:%M:%S')
+          dt = datetime.strptime(row[8], '%Y/%m/%d %H:%M:%S')
           cnt += [( dt, row[3], row[6], row[7] )]
         rowNum += 1
     cnt.sort(key=itemgetter(0, 1))

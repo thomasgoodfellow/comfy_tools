@@ -10,6 +10,8 @@
 ;; So DELETE key behaves nicely
 (global-set-key (kbd "<delete>") '(lambda (n) (interactive "p") (if (use-region-p) (delete-region (region-beginning) (region-end)) (delete-char n))))
 
+;; option as ALT on Mac
+(set-keyboard-coding-system nil)
 
 ;; Make shifted direction keys work on the Linux console or in an xterm
 (when (member (getenv "TERM") '("linux" "xterm"))

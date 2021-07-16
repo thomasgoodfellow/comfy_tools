@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# walk up the directory tree to extendible-compiler
+pushd . >/dev/null
+if [ $# -lt 3 ]
+then
+    tDir=${PWD##*/}
+    while [ "$tDir" != "extendible-compiler" ] && [ "$tDir" != "" ] ; do
+        cd ..
+        tDir=${PWD##*/}
+    done
+    if [ "$tDir" != "extendible-compiler" ]
+    then
+        echo "Didn't find extendible-compiler here or in parents"
+        popd >/dev/null
+        return 66
+    fi
+    pDir=$(pwd)
+    export PATH=$pDir/build/bin:$PATH
+    #export LD_LIBRARY_PATH=/opt/site/devtools/x86_64-linux-gnu/gcc/gcc-4.9.3/lib64:$pDir/build/iss/src:$LD_LIBRARY_PATH
+else
+    cd "$1"
+    if [ -d bin ] ; then cd bin ; fi
+    pDir=$(pwd)
+    export PATH=$pDir:$PATH
+fi
+echo "Added $pDir-based paths"
+popd >/dev/null
