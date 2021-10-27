@@ -12,7 +12,7 @@ if sys.argv[1] == '-d':
     dbgit = True
     del sys.argv[1]
 from subprocess import Popen, PIPE
-cmd = ['strace', '-s10000', '-f', '-e', 'trace=process'] + sys.argv[1:]
+cmd = ['strace', '-s10000', '-f', '-v', '-e', 'trace=process'] + sys.argv[1:]
 p = Popen(cmd, stdout=PIPE, stderr=PIPE)
 stdout, stderr = p.communicate()
 lines = stderr.split("\n")
@@ -22,7 +22,7 @@ for L in lines:
 #    print L
     m = re.match('\[pid\s*\d+\] execve\(\"[^\"]+\", \[(.+)\], \[.+\] <unfinished.+>', L)
     if not m:
-        m = re.match('\[pid\s*\d+\] execve\(\"[^\"]+\", \[(.+)\], \[.+\]\) =', L)
+        m = re.search('execve\(\"[^\"]+\", \[(.+)\], \[.+\]\) =', L)
     if m:
         args = m.group(1).split("\", \"")
         for i in range(len(args)):
