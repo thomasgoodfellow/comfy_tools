@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 
 # Shows all daughter processes launched from a given process invocation
 # If the first argument is "-d" then debugs the first daughter process
