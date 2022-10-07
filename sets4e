@@ -5,13 +5,13 @@ pushd . >/dev/null
 if [ $# -lt 3 ]
 then
     tDir=${PWD##*/}
-    while [ "$tDir" != "extendible-compiler" ] && [ "$tDir" != "" ] ; do
+    while [ "$tDir" != "extensible-compiler" ] && [ "$tDir" != "" ] ; do
         cd ..
         tDir=${PWD##*/}
     done
-    if [ "$tDir" != "extendible-compiler" ]
+    if [ "$tDir" != "extensible-compiler" ]
     then
-        echo "Didn't find extendible-compiler here or in parents"
+        echo "Didn't find extensible-compiler here or in parents"
         popd >/dev/null
         return 66
     fi
