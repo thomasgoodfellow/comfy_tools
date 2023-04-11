@@ -9,6 +9,10 @@ from PIL import Image
 from PIL.ExifTags import TAGS
 import sys
 
+def dump(obj):
+  for attr in dir(obj):
+    print("obj.%s = %r" % (attr, getattr(obj, attr)))
+    
 def get_field (exif,field) :
   for (k,v) in exif.items():
      if TAGS.get(k) == field:
@@ -27,7 +31,16 @@ class Foto():
         self.setLWT = setLWT
         self.hash = fotoHash(name, "", size)
     def __eq__(self, other):
-       return other and self.name == other.name and self.size == other.size and self.taken == other.taken
+       if not other or self.name != other.name or self.size != other.size:
+          return False
+       # shenanigans with timestamps of files copied to/from FAT systems
+       if self.taken > other.taken:
+          dd = self.taken - other.taken
+       else:
+          dd = other.taken - self.taken
+#       if dd.seconds > 2:
+#          print(f'dt = {dd.seconds}')
+       return dd.seconds <= 3
     def __ne__(self, other):
         return not self.__eq__(other)
     def __hash__(self):
@@ -74,10 +87,18 @@ def deDup(newFotos, libFotos):
 #    for f in newFotos:
 #        print(f'{f.name}, {f.size}, {f.hash}');
 #    for f in libFotos:
-#        print(f'{f.name}, {f.size}, {f.hash}');
+#        print(f'{f.name}, {f.size}, {f.taken}, {f.hash}');
     for f in newFotos:
+        eQ = False
+        for g in libFotos:
+            if f.__eq__(g):
+                eQ = True
+        if eQ != (f in libFotos):
+            print("Mismatch")
         if f in libFotos:
             removees.append(f)
+#        else:
+#            dump(f)
             
     for f in removees:
         newFotos.remove(f)
@@ -105,6 +126,7 @@ def generateMovieScript(newFotos, libDestDir, moveFile):
 parser = argparse.ArgumentParser(description='Copy only new photos from a photo source (camera) to the structured image library.')
 parser.add_argument('srcDir', help='camera or transfer directory')
 parser.add_argument('libDir', help='base of per-day photo library directory')
+parser.add_argument('--slow-lib-scan', action='store_true', help='use EXIF data in library for date-taken instead of (quicker) file modification date')
 parser.add_argument('--doItNow', action='store_true', help='if not copied immediately then you can first inspect or modify the copying script')
 args = parser.parse_args()
     
@@ -115,7 +137,7 @@ print("...{:1} source images".format(len(srcF)))
 
 libDir = args.libDir
 print(f'Scanning library {libDir}...')
-libF = scanDir(libDir, False)
+libF = scanDir(libDir, args.slow_lib_scan)
 print("...{:1} library images".format(len(libF)))
 
 print("De-duplicating source...")
