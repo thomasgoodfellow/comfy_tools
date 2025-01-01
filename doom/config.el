@@ -3,6 +3,8 @@
 ;; Place your private configuration here! Remember, you do not need to run 'doom
 ;; sync' after modifying this file!
 
+;; stay on python 3.8 for seal5
+(setq python-shell-interpreter "/.pyenv/versions/3.8.20/bin/python3")
 
 ;; Some functionality uses this to identify you, e.g. GPG configuration, email
 ;; clients, file templates and snippets. It is optional.
@@ -33,6 +35,8 @@
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
 (setq doom-theme 'doom-snazzy-tg)
+
+(setq doom-font (font-spec :family "DejaVu Sans Mono" :size 13))
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
@@ -86,8 +90,14 @@
 (map! "<C-tab>"  'iflipb-next-buffer)
 (map! "<f9>"     'projectile-compile-project)
 (map! "<f12>"    'next-error)
-(map! "<S-f12>"  'previous-error)
+(map! "<f11>"  'previous-error)
 
 ;; global beacon minor-mode
  (use-package! beacon)
  (after! beacon (beacon-mode 1))
+
+;; window rotations
+(load! "transpose-frame.el")
+
+;; smerge prexifx typable on German keyboard
+(setq smerge-command-prefix "\C-cv")
