@@ -5,19 +5,13 @@ import subprocess
 import argparse
 from os.path import splitext
 from datetime import datetime
-from PIL import Image
-from PIL.ExifTags import TAGS
+import exifread
 import sys
 
 def dump(obj):
   for attr in dir(obj):
     print("obj.%s = %r" % (attr, getattr(obj, attr)))
     
-def get_field (exif,field) :
-  for (k,v) in exif.items():
-     if TAGS.get(k) == field:
-        return v
-        
 def fotoHash(name, dir, size):
     hstr = name + str(size)
     return hash(hstr)
@@ -69,14 +63,11 @@ def scanDir(dir, useExif):
                 if extension == ".jpg" or extension == ".jpeg":
                     if useExif:
                         try:
-                            image = Image.open(path)
-                            if image:
-                                exif = image.getexif()
-                                if exif:
-                                    exifDT = get_field(exif, 'DateTimeOriginal')
-                                    if exifDT:
-                                        mTime = datetime.strptime(exifDT, '%Y:%m:%d %H:%M:%S')
-                                        setLWT = True   # set the file's modification time to match the ExIf, for faster subsequent evaluations
+                            with open(path, "rb") as image:
+                                tags = exifread.process_file(image)
+                                exifDT = tags['EXIF DateTimeOriginal']
+                                mTime = datetime.strptime(exifDT.__str__(), '%Y:%m:%d %H:%M:%S')
+                                setLWT = True   # set the file's modification time to match the ExIf, for faster subsequent evaluations
                         except:
                             print(path + " lacks EXIF DateTimeOriginal; using file date")
                 fotos.add(Foto(file, root, size, mTime, setLWT))
@@ -109,10 +100,10 @@ def generateMovieScript(newFotos, libDestDir, moveFile):
     n = 0
     scr = ''
     for f in newFotos:
-        dstDir = f'{libDestDir}\{f.taken.year}-{f.taken.month:02d}-{f.taken.day:02d}'
-        dstPath = f'{dstDir}\{f.name}'
+        dstDir = f'{libDestDir}\\{f.taken.year}-{f.taken.month:02d}-{f.taken.day:02d}'
+        dstPath = f'{dstDir}\\{f.name}'
         scr += f'if not exist "{dstDir}\" mkdir "{dstDir}"\n'
-        scr += f'if not exist "{dstPath}" {fileOp} /-Y "{f.dir}\{f.name}" "{dstPath}"\n'
+        scr += f'if not exist "{dstPath}" {fileOp} /-Y "{f.dir}\\{f.name}" "{dstPath}"\n'
         if f.setLWT:
             LWT = f'{f.taken.year}/{f.taken.month:02d}/{f.taken.day:02d} {f.taken.hour:02d}:{f.taken.minute:02d}:{f.taken.second:02d}'
             scr += f'powershell (ls \\"{dstPath}\\").LastWriteTime = Get-Date -Format \\"yyyy/MM/dd HH:mm:ss\\" \\"{LWT}\\"\n'
